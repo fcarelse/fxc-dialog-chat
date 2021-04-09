@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>FXC Dialog Chat Test Page</title>
+</head>
+<body>
+	<fxc-dialog-chat id="Chat1" title="Chatter1"></fxc-dialog-chat>
+	<fxc-dialog-chat id="Chat2" title="Chatter2"></fxc-dialog-chat>
+	<script src="/fxc-dialog-chat.js"></script>
+	<script>
+		const Chat1 = document.querySelector('#Chat1');
+		const Chat2 = document.querySelector('#Chat2');
+		Chat2.x+=400;
+		Chat1.addEventListener('send',({detail:{message}})=>
+			Chat2.receive({message, user: {name: Chat1.title}}));
+		Chat2.addEventListener('send',({detail:{message}})=>
+			Chat1.receive({message, user: {name: Chat2.title}}));
+	</script>
+</body>
+</html>
