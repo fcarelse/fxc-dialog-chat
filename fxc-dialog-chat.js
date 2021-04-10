@@ -39,12 +39,11 @@ class FXCDialogChat extends HTMLElement {
 		const element = this;
 
 		// Setup State
-		const state = this.state = {};
-		Object.assign(this.state, FXCDialogChat.baseState, {id: this.id});
+		const state = this.state = {...FXCDialogChat.baseState, id: this.id};
 
 		// Setup Update Properties
 		state.title = this.title || state.title;
-		'title body x y'.split(' ').forEach(declareUpdateProperty);
+		'title body x y isHidden'.split(' ').forEach(declareUpdateProperty);
 
 		// Setup User (Use Node Hosting Manager User if available)
 		let user;
@@ -99,6 +98,11 @@ class FXCDialogChat extends HTMLElement {
 			element.dispatchEvent(new CustomEvent('send', {detail: {id: element.id, element, user: {...user}, message}}))
 		}
 
+		this.onClose = function(e){
+			element.isHidden = true;
+			element.dispatchEvent(new CustomEvent('closed', {detail: {id: element.id, element}}))
+		}
+
 		this.clampX = function(n) {
 			return Math.min(Math.max(n, state.marginLeft + 1),
 				clientWidth() - elementWidth(this) - offsetX() - state.marginRight + 3);
@@ -133,6 +137,9 @@ class FXCDialogChat extends HTMLElement {
 			case 'body': {
 				this.shadowRoot.querySelector('.body').innerHTML = this.state.body;
 			} break;
+			case 'isHidden': {
+				this.style.visibility = this.state.isHidden? 'hidden': '';
+			} break;
 		}
 		this.dispatchEvent(new CustomEvent('updated',{detail: {id: this.id, element: this, prop}}))
 	}
@@ -141,7 +148,9 @@ class FXCDialogChat extends HTMLElement {
 		this.shadowRoot.innerHTML = html`
 ${genStyles.apply(this)}
 <div class="dialog">
-	<div class="header">${this.title}</div>
+	<div class="header">${this.title}
+		<div class="close">X</div>
+	</div>
 	<pre class="body">${this.body}</pre>
 	<div class="footer">
 		<input class="message" id="message" placeholder="Enter message here" type="text"/>
@@ -154,6 +163,7 @@ ${genStyles.apply(this)}
 			document.addEventListener('mouseup', this.onMouseUp);
 		}
 		this.shadowRoot.querySelector('.send').addEventListener('click', this.onSend);
+		this.shadowRoot.querySelector('.close').addEventListener('click', this.onClose);
 		this.state.rendered = true;
 		this.dispatchEvent(new CustomEvent('rendered',{detail: {id: this.id, element: this}}));
 	}
@@ -291,6 +301,23 @@ function genStyles(){ return html`<style>
 		width: 50px;
 		vertical-align: middle;
 		text-align: center;
+	}
+	.close{
+		cursor: pointer;
+		display: inline-block;
+		position: absolute;
+		background-color: #666666;
+		top: 2px;
+		right: 5px;
+		margin: 0px;
+		padding: 0px;
+		color: #ff2222;
+		width: 14px;
+		height: 14px;
+		padding-left: 2px;
+		padding-top: 2px;
+		line-height: 1.5;
+		font-weight: bold;
 	}
 	.hide{
 		visibility: hidden;
