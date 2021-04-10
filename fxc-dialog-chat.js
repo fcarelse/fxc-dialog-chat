@@ -172,8 +172,6 @@ ${genStyles.apply(this)}
 	}
 }
 
-window.customElements.define('fxc-dialog-chat', FXCDialogChat);
-
 // Support Functions
 function offsetX(){
 	const px = getComputedStyle(document.body, null).getPropertyValue('padding-left');
@@ -326,6 +324,16 @@ function genStyles(){ return html`<style>
 		visibility: hidden;
 	}
 </style>`}
+
+try{
+	if(window instanceof Object && window.customElements instanceof Object)
+		window.customElements.define('fxc-dialog-chat', FXCDialogChat);
+} catch(e){} // Not in browser environment
+
+try{
+	if(module instanceof Object && module.exports instanceof Object)
+		Object.assign(module.exports, {default: FXCDialogChat, FXCDialogChat});
+} catch(e){} // Not in commonJS environment
 
 // End of enclosed scope
 })();
