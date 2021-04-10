@@ -122,9 +122,6 @@ class FXCDialogChat extends HTMLElement {
 			case 'body': {
 				this.shadowRoot.querySelector('.body').innerHTML = this.state.body;
 			} break;
-			default: {
-				this.render();
-			} break;
 		}
 		this.dispatchEvent(new CustomEvent('updated',{detail: {id: this.id, element: this}}))
 		// This can be used to make a more efficient update, rather than a full re-render of the innerHTML.
