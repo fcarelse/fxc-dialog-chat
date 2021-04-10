@@ -33,7 +33,8 @@ class FXCDialogChat extends HTMLElement {
 	constructor () {
 		super()
 		FXCDialogChat.instances.push(this);
-		this.id = this.id || 'FXCDialogChat'+FXCDialogChat.nextID++;
+		this._id = FXCDialogChat.nextID++;
+		this.id = this.id || 'FXCDialogChat' + this._id;
 		this.attachShadow({mode: 'open'});
 		const element = this;
 
