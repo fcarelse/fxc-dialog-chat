@@ -23,13 +23,14 @@ class FXCDialogChat extends HTMLElement {
 		marginBottom: 1,
 		marginLeft: 1,
 		marginRight: 1,
+		rendered: false,
 	};
 
 	static nextID = 1;
 	static instances = [];
 
-  constructor () {
-    super()
+	constructor () {
+		super()
 		FXCDialogChat.instances.push(this);
 		this.id = this.id || 'FXCDialogChat'+FXCDialogChat.nextID++;
 		this.attachShadow({mode: 'open'});
@@ -55,20 +56,20 @@ class FXCDialogChat extends HTMLElement {
 			state.isDragging=true;
 			state.xDiff = e.pageX - state.x;
 			state.yDiff = e.pageY - state.y;
-			element.dispatchEvent(new CustomEvent('moving', {detail: {id: this.id, element}}))
+			element.dispatchEvent(new CustomEvent('moving', {detail: {id: element.id, element}}))
 		}
 		this.onMouseUp = function(e){
 			e.preventDefault();
 			state.isDragging=false;
 			setTimeout(()=>{
 				state.stopClick=false
-				element.dispatchEvent(new CustomEvent('placed', {detail: {id: this.id, element}}))
+				element.dispatchEvent(new CustomEvent('placed', {detail: {id: element.id, element}}))
 			},100);
 		}
 
 		this.receive = function({user, message}){
 			element.body += `${user.name}: ${message}\n`;
-			element.dispatchEvent(new CustomEvent('received', {detail: {id: this.id, element, user, message}}))
+			element.dispatchEvent(new CustomEvent('received', {detail: {id: element.id, element, user, message}}))
 		}
 
 		this.onSend = function(e){
@@ -82,7 +83,7 @@ class FXCDialogChat extends HTMLElement {
 				nhm.User.user.id:
 				{name: 'You', type: 'guest', id: 0};
 			element.body += `${user.name}: ${message}\n`;
-			element.dispatchEvent(new CustomEvent('send', {detail: {id: this.id, element, user, message}}))
+			element.dispatchEvent(new CustomEvent('send', {detail: {id: element.id, element, user, message}}))
 		}
 
 		this.clampX = function(n) {
@@ -96,7 +97,7 @@ class FXCDialogChat extends HTMLElement {
 
 		function declareUpdateProperty(prop){
 			Object.defineProperty(element, prop, {
-				set: function(value) { element.state[prop] = value; element.update()},
+				set: function(value) { element.state[prop] = value; element.update(prop)},
 				get: function(){ return element.state[prop]; }
 			});
 		}
@@ -104,36 +105,56 @@ class FXCDialogChat extends HTMLElement {
 		this.render();
 	}
 
-	update(){
-		this.dispatchEvent(new CustomEvent(`updating`,{detail: {id: this.id, element: this}}))
-		this.state.x = this.clampX(this.state.x);
-		this.state.y = this.clampY(this.state.y);
-		this.dispatchEvent(new CustomEvent(`updated`,{detail: {id: this.id, element: this}}))
+	update(prop){
+		if(!this.state.rendered) return;
+		this.dispatchEvent(new CustomEvent('updating',{detail: {id: this.id, element: this}}))
+		switch(prop){
+			case 'x': case 'y': {
+				this.state.x = this.clampX(this.state.x);
+				this.state.y = this.clampY(this.state.y);
+				this.style.transform = `translate(${this.x}px, ${this.y}px`;
+				// $('#dialog').x = this.state.x;
+				// $('#dialog').y = this.state.y;
+			} break;
+			case 'title': {
+				this.shadowRoot.querySelector('.header').innerHTML = this.state.title;
+			} break;
+			case 'body': {
+				this.shadowRoot.querySelector('.body').innerHTML = this.state.body;
+			} break;
+			default: {
+				this.render();
+			} break;
+		}
+		this.dispatchEvent(new CustomEvent('updated',{detail: {id: this.id, element: this}}))
 		// This can be used to make a more efficient update, rather than a full re-render of the innerHTML.
 		// But not being efficient here at the moment, just re-rendering.
-		this.render();
+		// this.render();
 	}
 
 	render(){
 		this.shadowRoot.innerHTML = html`
 ${genStyles.apply(this)}
-<div class="dialog" id="dialog">
-	<div class="header" id="handle">${this.title}</div>
+<div class="dialog">
+	<div class="header">${this.title}</div>
 	<pre class="body">${this.body}</pre>
 	<div class="footer">
 		<input class="message" id="message" placeholder="Enter message here" type="text"/>
 		<div class="send" id="send">Send</div>
 	</div>
 </div>`
-		this.shadowRoot.querySelector('#handle').addEventListener('mousedown', this.onMouseDown);
-		this.shadowRoot.querySelector('#dialog').addEventListener('mousemove', this.onMouseMove);
-		this.shadowRoot.querySelector('#dialog').addEventListener('mouseup', this.onMouseUp);
-		this.shadowRoot.querySelector('#send').addEventListener('click', this.onSend);
-		this.dispatchEvent(new CustomEvent(`rendered`,{detail: {id: this.id, element: this}}))
-  }
+		this.shadowRoot.querySelector('.header').addEventListener('mousedown', this.onMouseDown);
+		if(!this.state.rendered){
+			document.addEventListener('mousemove', this.onMouseMove);
+			document.addEventListener('mouseup', this.onMouseUp);
+		}
+		this.shadowRoot.querySelector('.send').addEventListener('click', this.onSend);
+		this.state.rendered = true;
+		this.dispatchEvent(new CustomEvent('rendered',{detail: {id: this.id, element: this}}));
+	}
 }
 
-window.customElements.define('fxc-dialog-chat', FXCDialogChat)
+window.customElements.define('fxc-dialog-chat', FXCDialogChat);
 
 // Support Functions
 function offsetX(){
