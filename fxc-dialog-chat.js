@@ -51,13 +51,13 @@ class FXCDialogChat extends HTMLElement {
 			nhm.User.watch('user', updateUser);
 			updateUser();
 		} else {
-			user = {...this.DEFAULT_USER};
+			user = {...FXCDialogChat.DEFAULT_USER};
 		}
 		
 		function updateUser(){
 			user = nhm.User.user instanceof Object?
 				{...nhm.User.user}:
-				{...this.DEFAULT_USER};
+				{...FXCDialogChat.DEFAULT_USER};
 		}
 
 		this.onMouseMove = function(e){
