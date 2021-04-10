@@ -43,7 +43,12 @@ class FXCDialogChat extends HTMLElement {
 		// Setup Update Properties
 		state.title = this.title || state.title;
 		'title body x y'.split(' ').forEach(declareUpdateProperty);
-		
+
+		// Setup User (Use Node Hosting Manager User if available)
+		const user = window.nhm instanceof Object && nhm.User && nhm.User.user?
+			nhm.User.user:
+			{name: 'You', type: 'guest', id: 0};
+
 		this.onMouseMove = function(e){
 			if(state.isDragging){
 				element.x = state.x = element.clampX(e.pageX - state.xDiff);
@@ -78,10 +83,6 @@ class FXCDialogChat extends HTMLElement {
 			const message = messageElement.value;
 			if(message == '') return;
 			messageElement.value = '';
-			// Support for Node Hosting Manager
-			const user = window.nhm instanceof Object?
-				nhm.User.user.id:
-				{name: 'You', type: 'guest', id: 0};
 			element.body += `${user.name}: ${message}\n`;
 			element.dispatchEvent(new CustomEvent('send', {detail: {id: element.id, element, user, message}}))
 		}
@@ -107,14 +108,12 @@ class FXCDialogChat extends HTMLElement {
 
 	update(prop){
 		if(!this.state.rendered) return;
-		this.dispatchEvent(new CustomEvent('updating',{detail: {id: this.id, element: this}}))
+		this.dispatchEvent(new CustomEvent('updating',{detail: {id: this.id, element: this, prop}}))
 		switch(prop){
 			case 'x': case 'y': {
 				this.state.x = this.clampX(this.state.x);
 				this.state.y = this.clampY(this.state.y);
 				this.style.transform = `translate(${this.x}px, ${this.y}px`;
-				// $('#dialog').x = this.state.x;
-				// $('#dialog').y = this.state.y;
 			} break;
 			case 'title': {
 				this.shadowRoot.querySelector('.header').innerHTML = this.state.title;
@@ -123,10 +122,7 @@ class FXCDialogChat extends HTMLElement {
 				this.shadowRoot.querySelector('.body').innerHTML = this.state.body;
 			} break;
 		}
-		this.dispatchEvent(new CustomEvent('updated',{detail: {id: this.id, element: this}}))
-		// This can be used to make a more efficient update, rather than a full re-render of the innerHTML.
-		// But not being efficient here at the moment, just re-rendering.
-		// this.render();
+		this.dispatchEvent(new CustomEvent('updated',{detail: {id: this.id, element: this, prop}}))
 	}
 
 	render(){
