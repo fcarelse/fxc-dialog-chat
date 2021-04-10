@@ -298,4 +298,3 @@ function genStyles(){ return html`<style>
 
 // End of enclosed scope
 })();
-
