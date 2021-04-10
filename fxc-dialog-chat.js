@@ -26,6 +26,7 @@ class FXCDialogChat extends HTMLElement {
 		rendered: false,
 	};
 
+	static DEFAULT_USER = {name: 'You', type: 'guest', id: 0};
 	static nextID = 1;
 	static instances = [];
 
@@ -45,9 +46,19 @@ class FXCDialogChat extends HTMLElement {
 		'title body x y'.split(' ').forEach(declareUpdateProperty);
 
 		// Setup User (Use Node Hosting Manager User if available)
-		const user = window.nhm instanceof Object && nhm.User && nhm.User.user?
-			nhm.User.user:
-			{name: 'You', type: 'guest', id: 0};
+		let user;
+		if(window.nhm instanceof Object && nhm.User instanceof Object && nhm.User.watch){
+			nhm.User.watch('user', updateUser);
+			updateUser();
+		} else {
+			user = {...this.DEFAULT_USER};
+		}
+		
+		function updateUser(){
+			user = nhm.User.user instanceof Object?
+				{...nhm.User.user}:
+				{...this.DEFAULT_USER};
+		}
 
 		this.onMouseMove = function(e){
 			if(state.isDragging){
@@ -74,7 +85,7 @@ class FXCDialogChat extends HTMLElement {
 
 		this.receive = function({user, message}){
 			element.body += `${user.name}: ${message}\n`;
-			element.dispatchEvent(new CustomEvent('received', {detail: {id: element.id, element, user, message}}))
+			element.dispatchEvent(new CustomEvent('received', {detail: {id: element.id, element, user: {...user}, message}}))
 		}
 
 		this.onSend = function(e){
@@ -84,7 +95,7 @@ class FXCDialogChat extends HTMLElement {
 			if(message == '') return;
 			messageElement.value = '';
 			element.body += `${user.name}: ${message}\n`;
-			element.dispatchEvent(new CustomEvent('send', {detail: {id: element.id, element, user, message}}))
+			element.dispatchEvent(new CustomEvent('send', {detail: {id: element.id, element, user: {...user}, message}}))
 		}
 
 		this.clampX = function(n) {
