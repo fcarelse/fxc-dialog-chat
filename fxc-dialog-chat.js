@@ -117,6 +117,7 @@ class FXCDialogChat extends HTMLElement {
 			});
 		}
 
+		// Build contents
 		this.shadowRoot.innerHTML = html`
 ${genStyles.apply(this)}
 <div class="dialog">
@@ -129,6 +130,8 @@ ${genStyles.apply(this)}
 		<div class="send" id="send">Send</div>
 	</div>
 </div>`
+
+		// Set event handlers
 		this.shadowRoot.querySelector('.header').addEventListener('mousedown', this.onMouseDown);
 		if(!this.state.rendered){
 			document.addEventListener('mousemove', this.onMouseMove);
@@ -139,6 +142,7 @@ ${genStyles.apply(this)}
 		this.shadowRoot.querySelector('.close').addEventListener('click', this.close);
 		this.state.rendered = true;
 		this.dispatchEvent(new CustomEvent('rendered',{detail: {id: element.id, element}}));
+		// End of constructor method
 	}
 
 	update(prop){
@@ -165,7 +169,7 @@ ${genStyles.apply(this)}
 		}
 		this.dispatchEvent(new CustomEvent('updated',{detail: {id, element, prop}}))
 	}
-}
+} // End of Class
 
 // Support Functions
 function offsetX(){
