@@ -166,6 +166,7 @@ ${genStyles.apply(this)}
 			document.addEventListener('mouseup', this.onMouseUp);
 		}
 		this.shadowRoot.querySelector('.send').addEventListener('click', this.onSend);
+		this.shadowRoot.querySelector('.message').addEventListener('keypress', (e)=>e.code=='Enter' && this.onSend(e));
 		this.shadowRoot.querySelector('.close').addEventListener('click', this.close);
 		this.state.rendered = true;
 		this.dispatchEvent(new CustomEvent('rendered',{detail: {id, element}}));
@@ -226,8 +227,6 @@ function genStyles(){ return html`<style>
 		margin: 0px;
 		padding: 1px;
 		background-color: white;
-		width: 300px;
-		height: 332px;
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -259,8 +258,8 @@ function genStyles(){ return html`<style>
 	.body{
 		margin: 0px;
 		padding: 2px;
-		height: 270px;
-		max-height: 270px;
+		min-height: 200px;
+		max-height: 200px;
 		overflow: auto;
 		border: 0px solid blue;
 	}
