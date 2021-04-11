@@ -117,7 +117,28 @@ class FXCDialogChat extends HTMLElement {
 			});
 		}
 
-		this.render();
+		this.shadowRoot.innerHTML = html`
+${genStyles.apply(this)}
+<div class="dialog">
+	<div class="header">${this.title}
+		<div class="close">X</div>
+	</div>
+	<pre class="body">${this.body}</pre>
+	<div class="footer">
+		<input class="message" id="message" placeholder="Enter message here" type="text"/>
+		<div class="send" id="send">Send</div>
+	</div>
+</div>`
+		this.shadowRoot.querySelector('.header').addEventListener('mousedown', this.onMouseDown);
+		if(!this.state.rendered){
+			document.addEventListener('mousemove', this.onMouseMove);
+			document.addEventListener('mouseup', this.onMouseUp);
+		}
+		this.shadowRoot.querySelector('.send').addEventListener('click', this.onSend);
+		this.shadowRoot.querySelector('.message').addEventListener('keypress', (e)=>e.code=='Enter' && this.onSend(e));
+		this.shadowRoot.querySelector('.close').addEventListener('click', this.close);
+		this.state.rendered = true;
+		this.dispatchEvent(new CustomEvent('rendered',{detail: {id: element.id, element}}));
 	}
 
 	update(prop){
@@ -143,33 +164,6 @@ class FXCDialogChat extends HTMLElement {
 			} break;
 		}
 		this.dispatchEvent(new CustomEvent('updated',{detail: {id, element, prop}}))
-	}
-
-	render(){
-		const {id} = this;
-		const element = this;
-		this.shadowRoot.innerHTML = html`
-${genStyles.apply(this)}
-<div class="dialog">
-	<div class="header">${this.title}
-		<div class="close">X</div>
-	</div>
-	<pre class="body">${this.body}</pre>
-	<div class="footer">
-		<input class="message" id="message" placeholder="Enter message here" type="text"/>
-		<div class="send" id="send">Send</div>
-	</div>
-</div>`
-		this.shadowRoot.querySelector('.header').addEventListener('mousedown', this.onMouseDown);
-		if(!this.state.rendered){
-			document.addEventListener('mousemove', this.onMouseMove);
-			document.addEventListener('mouseup', this.onMouseUp);
-		}
-		this.shadowRoot.querySelector('.send').addEventListener('click', this.onSend);
-		this.shadowRoot.querySelector('.message').addEventListener('keypress', (e)=>e.code=='Enter' && this.onSend(e));
-		this.shadowRoot.querySelector('.close').addEventListener('click', this.close);
-		this.state.rendered = true;
-		this.dispatchEvent(new CustomEvent('rendered',{detail: {id, element}}));
 	}
 }
 
