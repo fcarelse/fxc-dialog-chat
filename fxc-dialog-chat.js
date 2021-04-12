@@ -102,12 +102,26 @@ class FXCDialogChat extends HTMLElement {
 		this.close = this.hide = () => this.isHidden = true;
 
 		this.clampX = function(n) {
+			const clientWidth = document.documentElement.clientWidth;
+			const computed = getComputedStyle(element, null);
+			const elementWidth = pxToInt(computed.getPropertyValue('width'))
+				// +pxToInt(computed.getPropertyValue('marginLeft'))
+				// +pxToInt(computed.getPropertyValue('marginRight'))
+			const body = getComputedStyle(document.body, null)
+			const offsetX = pxToInt(body.getPropertyValue('padding-left')) + pxToInt(body.getPropertyValue('margin-left'));
 			return Math.min(Math.max(n, state.marginLeft + 1),
-				clientWidth() - elementWidth(this) - offsetX() - state.marginRight + 3);
+				clientWidth - elementWidth - offsetX - state.marginRight + 3);
 		}
 		this.clampY = function(n) {
+			const clientHeight = document.documentElement.clientHeight;
+			const computed = getComputedStyle(element, null);
+			const elementHeight = pxToInt(computed.getPropertyValue('height'))
+				// +pxToInt(computed.getPropertyValue('marginTop'))
+				// +pxToInt(computed.getPropertyValue('marginBottom'))
+			const body = getComputedStyle(document.body, null)
+			const offsetY = pxToInt(body.getPropertyValue('padding-top')) + pxToInt(body.getPropertyValue('margin-top'));
 			return Math.min(Math.max(n, state.marginTop + 1),
-				clientHeight() - elementHeight(this) - offsetY() - state.marginBottom + 3);
+				clientHeight - elementHeight - offsetY - state.marginBottom + 3);
 		}
 
 		function declareUpdateProperty(prop){
@@ -172,36 +186,6 @@ ${genStyles.apply(this)}
 } // End of Class
 
 // Support Functions
-function offsetX(){
-	const px = getComputedStyle(document.body, null).getPropertyValue('padding-left');
-	const mx = getComputedStyle(document.body, null).getPropertyValue('margin-left');
-	return pxToInt(px) + pxToInt(mx);
-}
-function offsetY(){
-	const py = getComputedStyle(document.body, null).getPropertyValue('padding-top');
-	const my = getComputedStyle(document.body, null).getPropertyValue('margin-top');
-	return pxToInt(py) + pxToInt(my);
-}
-function clientWidth(){
-	return document.documentElement.clientWidth;
-}
-function clientHeight(){
-	return document.documentElement.clientHeight;
-}
-function elementWidth(element){
-	const computed = getComputedStyle(element, null)
-	return pxToInt(computed.getPropertyValue('width'))
-		// +pxToInt(computed.getPropertyValue('marginLeft'))
-		// +pxToInt(computed.getPropertyValue('marginRight'))
-
-}
-function elementHeight(element){
-	const computed = getComputedStyle(element, null)
-	return pxToInt(computed.getPropertyValue('height'))
-		// +pxToInt(computed.getPropertyValue('marginTop'))
-		// +pxToInt(computed.getPropertyValue('marginBottom'))
-}
-
 function pxToInt(px){
 	return parseInt(px.toString().match(/\d+/) || '0');
 }
@@ -322,12 +306,12 @@ function genStyles(){ return html`<style>
 	}
 </style>`}
 
-try{
+try{ // Export for browser environment
 	if(window instanceof Object && window.customElements instanceof Object)
 		window.customElements.define('fxc-dialog-chat', FXCDialogChat);
 } catch(e){} // Not in browser environment
 
-try{
+try{ // Export for commonJS environment
 	if(module instanceof Object && module.exports instanceof Object)
 		Object.assign(module.exports, {default: FXCDialogChat, FXCDialogChat});
 } catch(e){} // Not in commonJS environment
