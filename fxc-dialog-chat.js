@@ -39,11 +39,8 @@ class FXCDialogChat extends HTMLElement {
 		const element = this;
 
 		// Setup State
-		const state = this.state = {...FXCDialogChat.baseState, id: element.id};
-
-		// Update Properties
+		const state = this.state = {...FXCDialogChat.baseState, id: element._id};
 		state.title = this.title || state.title;
-		'title body x y isHidden'.split(' ').forEach(declareUpdateProperty);
 
 		// Setup User (Use Node Hosting Manager User if available)
 		let user;
@@ -103,33 +100,35 @@ class FXCDialogChat extends HTMLElement {
 
 		this.clampX = function(n) {
 			const clientWidth = document.documentElement.clientWidth;
-			const computed = getComputedStyle(element, null);
-			const elementWidth = pxToInt(computed.getPropertyValue('width'))
-				// +pxToInt(computed.getPropertyValue('marginLeft'))
-				// +pxToInt(computed.getPropertyValue('marginRight'))
-			const body = getComputedStyle(document.body, null)
-			const offsetX = pxToInt(body.getPropertyValue('padding-left')) + pxToInt(body.getPropertyValue('margin-left'));
+			const computedElement = getComputedStyle(element, null);
+			const elementWidth = pxToInt(computedElement.getPropertyValue('width'))
+				// +pxToInt(computedElement.getPropertyValue('marginLeft'))
+				// +pxToInt(computedElement.getPropertyValue('marginRight'))
+			const computedBody = getComputedStyle(document.body, null)
+			const offsetX = pxToInt(computedBody.getPropertyValue('padding-left')) + pxToInt(computedBody.getPropertyValue('margin-left'));
 			return Math.min(Math.max(n, state.marginLeft + 1),
 				clientWidth - elementWidth - offsetX - state.marginRight + 3);
 		}
+
 		this.clampY = function(n) {
 			const clientHeight = document.documentElement.clientHeight;
-			const computed = getComputedStyle(element, null);
-			const elementHeight = pxToInt(computed.getPropertyValue('height'))
-				// +pxToInt(computed.getPropertyValue('marginTop'))
-				// +pxToInt(computed.getPropertyValue('marginBottom'))
-			const body = getComputedStyle(document.body, null)
-			const offsetY = pxToInt(body.getPropertyValue('padding-top')) + pxToInt(body.getPropertyValue('margin-top'));
+			const computedElement = getComputedStyle(element, null);
+			const elementHeight = pxToInt(computedElement.getPropertyValue('height'))
+				// +pxToInt(computedElement.getPropertyValue('marginTop'))
+				// +pxToInt(computedElement.getPropertyValue('marginBottom'))
+			const computedBody = getComputedStyle(document.body, null)
+			const offsetY = pxToInt(computedBody.getPropertyValue('padding-top')) + pxToInt(computedBody.getPropertyValue('margin-top'));
 			return Math.min(Math.max(n, state.marginTop + 1),
 				clientHeight - elementHeight - offsetY - state.marginBottom + 3);
 		}
 
-		function declareUpdateProperty(prop){
+		// Declare Update Properties
+		'title body x y isHidden'.split(' ').forEach(prop=>{
 			Object.defineProperty(element, prop, {
 				set: function(value) { element.state[prop] = value; element.update(prop)},
 				get: function(){ return element.state[prop]; }
 			});
-		}
+		});
 
 		// Build contents
 		this.shadowRoot.innerHTML = html`
