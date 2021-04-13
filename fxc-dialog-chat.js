@@ -13,7 +13,7 @@ class FXCDialogChat extends HTMLElement {
 		name: 'Unnamed Dialog',
 		title: 'Dialog Title',
 		isDragging: false,
-		isHidden: false,
+		hide: false,
 		xDiff: 0,
 		yDiff: 0,
 		x: 100,
@@ -33,7 +33,6 @@ class FXCDialogChat extends HTMLElement {
 	constructor () {
 		super()
 		FXCDialogChat.instances.push(this);
-		this._id = FXCDialogChat.nextID++;
 		this.id = this.id || 'FXCDialogChat' + this._id;
 		this.attachShadow({mode: 'open'});
 		const element = this;
@@ -41,6 +40,9 @@ class FXCDialogChat extends HTMLElement {
 		// Setup State
 		const state = this.state = {...FXCDialogChat.baseState, id: element._id};
 		state.title = this.title || state.title;
+		(function(_id){ // Set readonly _id on element. Ensuring Uniqueness
+			Object.defineProperty(state, '_id', { get(){ return _id } })
+		})(FXCDialogChat.nextID++);
 
 		// Setup User (Use Node Hosting Manager User if available)
 		let user;
@@ -80,11 +82,13 @@ class FXCDialogChat extends HTMLElement {
 			},100);
 		}
 
+		// Method for receiving message from system
 		this.receive = function({user, message}){
 			element.body += `${user.name}: ${message}\n`;
 			element.dispatchEvent(new CustomEvent('received', {detail: {id: element.id, element, user: {...user}, message}}))
 		}
 
+		// Handler method for the Sending Event
 		this.onSend = function(e){
 			e.preventDefault();
 			const messageElement = element.shadowRoot.querySelector('#message');
@@ -95,8 +99,8 @@ class FXCDialogChat extends HTMLElement {
 			element.dispatchEvent(new CustomEvent('send', {detail: {id: element.id, element, user: {...user}, message}}))
 		}
 
-		this.open = this.show = () => this.isHidden = false;
-		this.close = this.hide = () => this.isHidden = true;
+		this.open = this.show = () => this.hide = false;
+		this.close = this.hide = () => this.hide = true;
 
 		this.clampX = function(n) {
 			const clientWidth = document.documentElement.clientWidth;
@@ -105,7 +109,8 @@ class FXCDialogChat extends HTMLElement {
 				// +pxToInt(computedElement.getPropertyValue('marginLeft'))
 				// +pxToInt(computedElement.getPropertyValue('marginRight'))
 			const computedBody = getComputedStyle(document.body, null)
-			const offsetX = pxToInt(computedBody.getPropertyValue('padding-left')) + pxToInt(computedBody.getPropertyValue('margin-left'));
+			const offsetX = pxToInt(computedBody.getPropertyValue('padding-left')) +
+				pxToInt(computedBody.getPropertyValue('margin-left'));
 			return Math.min(Math.max(n, state.marginLeft + 1),
 				clientWidth - elementWidth - offsetX - state.marginRight + 3);
 		}
@@ -117,13 +122,14 @@ class FXCDialogChat extends HTMLElement {
 				// +pxToInt(computedElement.getPropertyValue('marginTop'))
 				// +pxToInt(computedElement.getPropertyValue('marginBottom'))
 			const computedBody = getComputedStyle(document.body, null)
-			const offsetY = pxToInt(computedBody.getPropertyValue('padding-top')) + pxToInt(computedBody.getPropertyValue('margin-top'));
+			const offsetY = pxToInt(computedBody.getPropertyValue('padding-top')) +
+				pxToInt(computedBody.getPropertyValue('margin-top'));
 			return Math.min(Math.max(n, state.marginTop + 1),
 				clientHeight - elementHeight - offsetY - state.marginBottom + 3);
 		}
 
 		// Declare Update Properties
-		'title body x y isHidden'.split(' ').forEach(prop=>{
+		'title body x y hide _id'.split(' ').forEach(prop=>{
 			Object.defineProperty(element, prop, {
 				set: function(value) { element.state[prop] = value; element.update(prop)},
 				get: function(){ return element.state[prop]; }
@@ -155,11 +161,12 @@ ${genStyles.apply(this)}
 		this.shadowRoot.querySelector('.close').addEventListener('click', this.close);
 		this.state.rendered = true;
 		this.dispatchEvent(new CustomEvent('rendered',{detail: {id: element.id, element}}));
+
 		// End of constructor method
 	}
 
 	update(prop){
-		if(!this.state.rendered) return;
+		if(!this.state.rendered) return console.error('Update before Rendered');
 		const {id} = this;
 		const element = this;
 		this.dispatchEvent(new CustomEvent('updating',{detail: {id, element, prop}}))
@@ -175,9 +182,9 @@ ${genStyles.apply(this)}
 			case 'body': {
 				this.shadowRoot.querySelector('.body').innerHTML = this.state.body;
 			} break;
-			case 'isHidden': {
-				this.style.visibility = this.state.isHidden? 'hidden': '';
-				this.dispatchEvent(new CustomEvent(this.state.isHidden? 'hide': 'show', {detail: {id, element}}))
+			case 'hide': {
+				this.style.visibility = this.state.hide? 'hidden': '';
+				this.dispatchEvent(new CustomEvent(this.state.hide? 'hide': 'show', {detail: {id, element}}))
 			} break;
 		}
 		this.dispatchEvent(new CustomEvent('updated',{detail: {id, element, prop}}))
@@ -211,7 +218,7 @@ function genStyles(){ return html`<style>
 		position: fixed;
 		top: 0;
 		left: 0;
-		visibility: ${this.state.isHidden?'hidden':''};
+		visibility: ${this.state.hide?'hidden':''};
 		transform: translate(${this.x}px, ${this.y}px);
 	}
 	div{
