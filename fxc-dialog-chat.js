@@ -18,6 +18,7 @@ class FXCDialogChat extends HTMLElement {
 		yDiff: 0,
 		x: 100,
 		y: 100,
+		z: 0,
 		body: 'Chat open ...\n',
 		marginTop: 1,
 		marginBottom: 1,
@@ -33,16 +34,19 @@ class FXCDialogChat extends HTMLElement {
 	constructor () {
 		super()
 		FXCDialogChat.instances.push(this);
-		this.id = this.id || 'FXCDialogChat' + this._id;
 		this.attachShadow({mode: 'open'});
 		const element = this;
 
 		// Setup State
-		const state = this.state = {...FXCDialogChat.baseState, id: element._id};
-		state.title = this.title || state.title;
-		(function(_id){ // Set readonly _id on element. Ensuring Uniqueness
+		const state = this.state = {...FXCDialogChat.baseState};
+		(function(_id){ // Set readonly _id on state and element. Ensuring Uniqueness
 			Object.defineProperty(state, '_id', { get(){ return _id } })
+			Object.defineProperty(element, '_id', { get(){ return _id } })
 		})(FXCDialogChat.nextID++);
+		state.id = this._id;
+		this.id = this.id || 'FXCDialogChat' + this._id;
+		state.title = this.title || state.title;
+		state.z = FXCDialogChat.instances.length;
 
 		// Setup User (Use Node Hosting Manager User if available)
 		let user;
@@ -72,6 +76,7 @@ class FXCDialogChat extends HTMLElement {
 			state.xDiff = e.pageX - state.x;
 			state.yDiff = e.pageY - state.y;
 			element.dispatchEvent(new CustomEvent('moving', {detail: {id: element.id, element}}))
+			element.setToTop();
 		}
 		this.onMouseUp = function(e){
 			e.preventDefault();
@@ -102,6 +107,14 @@ class FXCDialogChat extends HTMLElement {
 		this.open = this.show = () => this.hide = false;
 		this.close = this.hide = () => this.hide = true;
 
+		this.setToTop = ()=>{
+			this.state.z = FXCDialogChat.instances.length + 1;
+			FXCDialogChat.instances.sort((a,b)=>
+				a.state.z == b.state.z? 0:
+				a.state.z > b.state.z? 1: -1
+			).forEach((inst, i)=>inst.z = i);
+		}
+
 		this.clampX = function(n) {
 			const clientWidth = document.documentElement.clientWidth;
 			const computedElement = getComputedStyle(element, null);
@@ -129,7 +142,7 @@ class FXCDialogChat extends HTMLElement {
 		}
 
 		// Declare Update Properties
-		'title body x y hide _id'.split(' ').forEach(prop=>{
+		'title body x y z hide'.split(' ').forEach(prop=>{
 			Object.defineProperty(element, prop, {
 				set: function(value) { element.state[prop] = value; element.update(prop)},
 				get: function(){ return element.state[prop]; }
@@ -159,6 +172,7 @@ ${genStyles.apply(this)}
 		this.shadowRoot.querySelector('.send').addEventListener('click', this.onSend);
 		this.shadowRoot.querySelector('.message').addEventListener('keypress', (e)=>e.code=='Enter' && this.onSend(e));
 		this.shadowRoot.querySelector('.close').addEventListener('click', this.close);
+		this.addEventListener('focus', this.setToTop);
 		this.state.rendered = true;
 		this.dispatchEvent(new CustomEvent('rendered',{detail: {id: element.id, element}}));
 
@@ -175,6 +189,9 @@ ${genStyles.apply(this)}
 				this.state.x = this.clampX(this.state.x);
 				this.state.y = this.clampY(this.state.y);
 				this.style.transform = `translate(${this.x}px, ${this.y}px`;
+			} break;
+			case 'z': {
+				this.style.zIndex = 20000 + this.state.z;
 			} break;
 			case 'title': {
 				this.shadowRoot.querySelector('.header').innerHTML = this.state.title;
@@ -210,7 +227,7 @@ function classMap(map){
 
 function genStyles(){ return html`<style>
 	:host {
-		z-index: 20001;
+		z-index: ${20000 + this.z};
 		border: 1px solid purple;
 		margin: 0px;
 		padding: 1px;
