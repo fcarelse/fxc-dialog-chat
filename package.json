@@ -5,6 +5,7 @@
   "main": "fxc-dialog-chat.js",
   "scripts": {
 		"start": "npx html-server src",
+		"publish": "cp src/* docs",
     "test": "npx html-server src"
   },
 	"files":[
