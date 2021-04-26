@@ -4,8 +4,8 @@
   "description": "Native Standalone Javascript HTMLElement Chat Dialog (FXC,NHM)",
   "main": "lib/fxc-dialog-chat.js",
   "scripts": {
-		"start": "npx html-server .",
-    "test": "npx html-server ."
+		"start": "npx http-server .",
+    "test": "npx http-server ."
   },
 	"files":[
 		"/lib"
