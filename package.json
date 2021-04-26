@@ -1,6 +1,6 @@
 {
   "name": "fxc-dialog-chat",
-  "version": "0.5.1",
+  "version": "0.5.3",
   "description": "Native Standalone Javascript HTMLElement Chat Dialog (FXC,NHM)",
   "main": "fxc-dialog-chat.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "test": "npx html-server src"
   },
 	"files":[
-		"/src"
+		"/lib"
 	],
   "repository": {
     "type": "git",
