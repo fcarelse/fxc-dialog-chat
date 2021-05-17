@@ -1,34 +1,35 @@
 {
-  "name": "fxc-dialog-chat",
-  "version": "0.5.7",
-  "description": "Native Standalone Javascript HTMLElement Chat Dialog (FXC,NHM)",
-  "main": "lib/fxc-dialog-chat.js",
-  "scripts": {
+	"name": "fxc-dialog-chat",
+	"version": "0.5.7",
+	"description": "Native Standalone Javascript HTMLElement Chat Dialog (FXC,NHM)",
+	"main": "lib/fxc-dialog-chat.js",
+	"scripts": {
 		"start": "npx http-server .",
-    "test": "npx http-server ."
-  },
+		"demo": "npx http-server .",
+		"test": "npx http-server ."
+	},
 	"files":[
 		"/lib"
 	],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/fcarelse/fxc-dialog-chat.git"
-  },
-  "keywords": [
-    "NHM",
-    "FXC",
-    "Chat",
-    "Dialog",
-    "Native",
-    "CustomElements",
-    "HTMLElement",
-    "JavaScript",
-    "Zero-Dependencies"
-  ],
-  "author": "Francis Carelse",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/fcarelse/fxc-dialog-chat/issues"
-  },
-  "homepage": "https://github.com/fcarelse/fxc-dialog-chat#readme"
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/fcarelse/fxc-dialog-chat.git"
+	},
+	"keywords": [
+		"NHM",
+		"FXC",
+		"Chat",
+		"Dialog",
+		"Native",
+		"CustomElements",
+		"HTMLElement",
+		"JavaScript",
+		"Zero-Dependencies"
+	],
+	"author": "Francis Carelse",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/fcarelse/fxc-dialog-chat/issues"
+	},
+	"homepage": "https://github.com/fcarelse/fxc-dialog-chat#readme"
 }
